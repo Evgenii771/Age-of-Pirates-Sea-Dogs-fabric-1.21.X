@@ -19,7 +19,6 @@ public class ModItems {
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, Identifier.of(AgeOfPirates.MOD_ID, name), item);
         //test1 pvd
-        //test2 pvd
     }
 
     public static void registerModItems() {
