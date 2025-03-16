@@ -1,12 +1,18 @@
 package net.mrmascot.seadogs.item;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.*;
 import net.mrmascot.seadogs.AgeOfPirates;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
+import net.mrmascot.seadogs.item.custom.GunpowderWeaponItem;
 import net.mrmascot.seadogs.item.custom.MusketItem;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Predicate;
 
 public class ModItems {
     public static final Item BANANA = registerItem("banana", new Item(new Item.Settings().food(ModFoodComponents.BANANA)));

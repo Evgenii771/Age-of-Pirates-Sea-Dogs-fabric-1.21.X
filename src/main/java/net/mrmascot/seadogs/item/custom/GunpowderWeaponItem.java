@@ -1,5 +1,13 @@
 package net.mrmascot.seadogs.item.custom;
 
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
@@ -12,30 +20,31 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Unit;
 import net.minecraft.world.World;
-import net.mrmascot.seadogs.AgeOfPirates;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
 
 public abstract class GunpowderWeaponItem extends Item {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(AgeOfPirates.MOD_ID);
-
     public static final Predicate<ItemStack> BOW_PROJECTILES = (stack) -> stack.isIn(ItemTags.ARROWS);
     public static final Predicate<ItemStack> CROSSBOW_HELD_PROJECTILES;
 
-    //protected abstract void shoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target);
-
-    public abstract void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks);
-
-    public GunpowderWeaponItem(Settings settings) {
+    public GunpowderWeaponItem(Item.Settings settings) {
         super(settings);
+    }
+
+    public Predicate<ItemStack> getHeldProjectiles() {
+        return this.getProjectiles();
+    }
+
+    public abstract Predicate<ItemStack> getProjectiles();
+
+    public static ItemStack getHeldProjectile(LivingEntity entity, Predicate<ItemStack> predicate) {
+        if (predicate.test(entity.getStackInHand(Hand.OFF_HAND))) {
+            return entity.getStackInHand(Hand.OFF_HAND);
+        } else {
+            return predicate.test(entity.getStackInHand(Hand.MAIN_HAND)) ? entity.getStackInHand(Hand.MAIN_HAND) : ItemStack.EMPTY;
+        }
     }
 
     public int getEnchantability() {
@@ -44,12 +53,27 @@ public abstract class GunpowderWeaponItem extends Item {
 
     public abstract int getRange();
 
-    protected void isLoaded(){
-        LOGGER.info("isLoaded");
-    }
+    protected void shootAll(ServerWorld world, LivingEntity shooter, Hand hand, ItemStack stack, List<ItemStack> projectiles, float speed, float divergence, boolean critical, @Nullable LivingEntity target) {
+        float f = EnchantmentHelper.getProjectileSpread(world, stack, shooter, 0.0F);
+        float g = projectiles.size() == 1 ? 0.0F : 2.0F * f / (float)(projectiles.size() - 1);
+        float h = (float)((projectiles.size() - 1) % 2) * g / 2.0F;
+        float i = 1.0F;
 
-    protected void shootAll() {
-        LOGGER.info("shootAll");
+        for(int j = 0; j < projectiles.size(); ++j) {
+            ItemStack itemStack = (ItemStack)projectiles.get(j);
+            if (!itemStack.isEmpty()) {
+                float k = h + i * (float)((j + 1) / 2) * g;
+                i = -i;
+                ProjectileEntity projectileEntity = this.createArrowEntity(world, shooter, stack, itemStack, critical);
+                this.shoot(shooter, projectileEntity, j, speed, divergence, k, target);
+                world.spawnEntity(projectileEntity);
+                stack.damage(this.getWeaponStackDamage(itemStack), shooter, LivingEntity.getSlotForHand(hand));
+                if (stack.isEmpty()) {
+                    break;
+                }
+            }
+        }
+
     }
 
     protected int getWeaponStackDamage(ItemStack projectile) {
@@ -64,7 +88,7 @@ public abstract class GunpowderWeaponItem extends Item {
         if (var8 instanceof ArrowItem arrowItem) {
             var10000 = arrowItem;
         } else {
-            var10000 = (ArrowItem)Items.ARROW;
+            var10000 = (ArrowItem) Items.ARROW;
         }
 
         ArrowItem arrowItem2 = var10000;
@@ -138,6 +162,6 @@ public abstract class GunpowderWeaponItem extends Item {
     }
 
     static {
-        CROSSBOW_HELD_PROJECTILES = BOW_PROJECTILES;
+        CROSSBOW_HELD_PROJECTILES = BOW_PROJECTILES.or((stack) -> stack.isOf(Items.FIREWORK_ROCKET));
     }
 }
