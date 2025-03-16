@@ -13,10 +13,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.item.*;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenTexts;
@@ -44,11 +41,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+public class MusketItem extends CrossbowItem {
 //public class MusketItem extends RangedWeaponItem {
 //public class MusketItem extends GunpowderWeaponItem {
-public class MusketItem extends Test {
+//public class MusketItem extends Test {
     private static final float DEFAULT_PULL_TIME = 1.25F;
-    public static final int RANGE = 8;
+    public static final int RANGE = 16;
     private boolean charged = false;
     private boolean loaded = false;
     private static final float CHARGE_PROGRESS = 0.2F;
@@ -90,20 +88,29 @@ public class MusketItem extends Test {
         return stack.contains(Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
     }
 
+//    public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
+//        int i = this.getMaxUseTime(stack, user) - remainingUseTicks;
+//        float f = getPullProgress(i, stack, user);
+//        if (f >= 1.0F && !isCharged(stack) && loadProjectiles(user, stack)) {
+//            net.minecraft.item.CrossbowItem.LoadingSounds loadingSounds = this.getLoadingSounds(stack);
+//            loadingSounds.end().ifPresent((sound) -> world.playSound((PlayerEntity)null, user.getX(), user.getY(), user.getZ(), (SoundEvent)sound.value(), user.getSoundCategory(), 1.0F, 1.0F / (world.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F));
+//        }
+//
+//    }
+
+    @Override
     public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
         int i = this.getMaxUseTime(stack, user) - remainingUseTicks;
-        float f = getPullProgress(i, stack, user);
+        float f = getPullProgress(i);
         if (f >= 1.0F && !isCharged(stack) && loadProjectiles(user, stack)) {
-            net.minecraft.item.CrossbowItem.LoadingSounds loadingSounds = this.getLoadingSounds(stack);
-            loadingSounds.end().ifPresent((sound) -> world.playSound((PlayerEntity)null, user.getX(), user.getY(), user.getZ(), (SoundEvent)sound.value(), user.getSoundCategory(), 1.0F, 1.0F / (world.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F));
+            world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.ITEM_CROSSBOW_LOADING_END, SoundCategory.PLAYERS, 1.0F, 1.0F);
         }
-
     }
 
-    private static boolean loadProjectiles(LivingEntity shooter, ItemStack crossbow) {
-        List<ItemStack> list = load(crossbow, shooter.getProjectileType(crossbow), shooter);
+    private static boolean loadProjectiles(LivingEntity shooter, ItemStack musket) {
+        List<ItemStack> list = load(musket, shooter.getProjectileType(musket), shooter);
         if (!list.isEmpty()) {
-            crossbow.set(DataComponentTypes.CHARGED_PROJECTILES, ChargedProjectilesComponent.of(list));
+            musket.set(DataComponentTypes.CHARGED_PROJECTILES, ChargedProjectilesComponent.of(list));
             return true;
         } else {
             return false;
@@ -115,25 +122,32 @@ public class MusketItem extends Test {
         return !chargedProjectilesComponent.isEmpty();
     }
 
-    protected void shoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target) {
-        Vector3f vector3f;
-        if (target != null) {
-            double d = target.getX() - shooter.getX();
-            double e = target.getZ() - shooter.getZ();
-            double f = Math.sqrt(d * d + e * e);
-            double g = target.getBodyY(0.3333333333333333) - projectile.getY() + f * (double)0.2F;
-            vector3f = calcVelocity(shooter, new Vec3d(d, g, e), yaw);
-        } else {
-            Vec3d vec3d = shooter.getOppositeRotationVector(1.0F);
-            Quaternionf quaternionf = (new Quaternionf()).setAngleAxis((double)(yaw * ((float)Math.PI / 180F)), vec3d.x, vec3d.y, vec3d.z);
-            Vec3d vec3d2 = shooter.getRotationVec(1.0F);
-            vector3f = vec3d2.toVector3f().rotate(quaternionf);
-        }
 
-        projectile.setVelocity((double)vector3f.x(), (double)vector3f.y(), (double)vector3f.z(), speed, divergence);
-        float h = getSoundPitch(shooter.getRandom(), index);
-        shooter.getWorld().playSound((PlayerEntity)null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ITEM_CROSSBOW_SHOOT, shooter.getSoundCategory(), 1.0F, h);
+//    @Override
+    protected void shoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw) {
+        projectile.setVelocity(shooter, shooter.getPitch(), shooter.getYaw(), 0.0F, speed, 1.0F);
+        shooter.getWorld().spawnEntity(projectile);
     }
+
+//    protected void shoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target) {
+//        Vector3f vector3f;
+//        if (target != null) {
+//            double d = target.getX() - shooter.getX();
+//            double e = target.getZ() - shooter.getZ();
+//            double f = Math.sqrt(d * d + e * e);
+//            double g = target.getBodyY(0.3333333333333333) - projectile.getY() + f * (double)0.2F;
+//            vector3f = calcVelocity(shooter, new Vec3d(d, g, e), yaw);
+//        } else {
+//            Vec3d vec3d = shooter.getOppositeRotationVector(1.0F);
+//            Quaternionf quaternionf = (new Quaternionf()).setAngleAxis((double)(yaw * ((float)Math.PI / 180F)), vec3d.x, vec3d.y, vec3d.z);
+//            Vec3d vec3d2 = shooter.getRotationVec(1.0F);
+//            vector3f = vec3d2.toVector3f().rotate(quaternionf);
+//        }
+//
+//        projectile.setVelocity((double)vector3f.x(), (double)vector3f.y(), (double)vector3f.z(), speed, divergence);
+//        float h = getSoundPitch(shooter.getRandom(), index);
+//        shooter.getWorld().playSound((PlayerEntity)null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ITEM_CROSSBOW_SHOOT, shooter.getSoundCategory(), 1.0F, h);
+//    }
 
     private static Vector3f calcVelocity(LivingEntity shooter, Vec3d direction, float yaw) {
         Vector3f vector3f = direction.toVector3f().normalize();
@@ -231,14 +245,22 @@ public class MusketItem extends Test {
         return (net.minecraft.item.CrossbowItem.LoadingSounds)EnchantmentHelper.getEffect(stack, EnchantmentEffectComponentTypes.CROSSBOW_CHARGING_SOUNDS).orElse(DEFAULT_LOADING_SOUNDS);
     }
 
-    private static float getPullProgress(int useTicks, ItemStack stack, LivingEntity user) {
-        float f = (float)useTicks / (float)getPullTime(stack, user);
-        if (f > 1.0F) {
-            f = 1.0F;
-        }
 
-        return f;
+    private static float getPullProgress(int useTicks) {
+        float f = (float) useTicks / 20.0F;
+        return Math.min(f, 1.0F);
     }
+
+//    private static float getPullProgress(int useTicks, ItemStack stack, LivingEntity user) {
+//        float f = (float)useTicks / (float)getPullTime(stack, user);
+//        if (f > 1.0F) {
+//            f = 1.0F;
+//        }
+//
+//        return f;
+//    }
+
+
 
     public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {
         ChargedProjectilesComponent chargedProjectilesComponent = (ChargedProjectilesComponent)stack.get(DataComponentTypes.CHARGED_PROJECTILES);

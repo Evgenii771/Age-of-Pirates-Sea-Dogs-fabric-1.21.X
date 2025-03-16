@@ -17,6 +17,6 @@ public class AgeOfPirates implements ModInitializer {
 		LOGGER.info("ARRRR!!");
 
 		FuelRegistry.INSTANCE.add(ModItems.BANANA, 150);
-
+		FuelRegistry.INSTANCE.add(ModItems.MUSKET, 151);
 	}
 }

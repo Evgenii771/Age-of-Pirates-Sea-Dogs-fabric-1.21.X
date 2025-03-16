@@ -30,6 +30,7 @@ public abstract class GunpowderWeaponItem extends Item {
     public static final Predicate<ItemStack> CROSSBOW_HELD_PROJECTILES;
 
     public GunpowderWeaponItem(Item.Settings settings) {
+
         super(settings);
     }
 
