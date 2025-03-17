@@ -22,6 +22,9 @@ public class ModItems {
 
     public static final Item BULLET = registerItem("bullet", new ArrowItem(new Item.Settings().maxDamage(3)));
 
+
+
+
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, Identifier.of(AgeOfPirates.MOD_ID, name), item);
         //test1 pvd
